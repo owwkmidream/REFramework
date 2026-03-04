@@ -19,3 +19,22 @@ jobs:
 
       - name: Build RE4
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target RE4
+
+      - name: Compress release
+        run: |
+          echo ${{github.sha}} > ${{github.workspace}}/reframework_revision.txt
+          echo none > ${{github.workspace}}/DELETE_OPENVR_API_DLL_IF_YOU_WANT_TO_USE_OPENXR
+          7z a ${{github.workspace}}/RE4.zip ${{github.workspace}}/reframework_revision.txt
+          7z a ${{github.workspace}}/RE4.zip ${{github.workspace}}/DELETE_OPENVR_API_DLL_IF_YOU_WANT_TO_USE_OPENXR
+          7z a ${{github.workspace}}/RE4.zip ${{github.workspace}}/build/bin/RE4/dinput8.dll
+          7z a ${{github.workspace}}/RE4.zip ${{github.workspace}}/dependencies/openvr/bin/win64/openvr_api.dll
+          7z a ${{github.workspace}}/RE4.zip ${{github.workspace}}/build/_deps/openxr-build/src/loader/${{env.BUILD_TYPE}}/openxr_loader.dll
+          7z a ${{github.workspace}}/RE4.zip ${{github.workspace}}/scripts
+          7z rn ${{github.workspace}}/RE4.zip scripts reframework/autorun
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1
+        with:
+          name: RE4
+          path: ${{github.workspace}}/RE4.zip
+          if-no-files-found: error
